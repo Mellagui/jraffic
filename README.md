@@ -94,18 +94,21 @@ Vehicles must spawn with safe distance — no spamming.
 ---
 
 ## 📺 Example
-Example: road_intersection *(YouTube link provided in original instructions)*
+Example: [road_intersection](https://www.youtube.com/watch?v=6B0-ZBET6mo).
 
 ---
 
 ## ⭐ Bonus Features
 Optional additions:
 
-- Animated vehicles/traffic lights  
-- Use assets from: limezu, finalbossblue, mobilegamegraphics, spriters-resource  
+- Vehicle and traffic light animations, and image rendering. You can find some cool assets here:
+  - [limezu](https://limezu.itch.io/)
+  - [finalbossblue](http://finalbossblues.com/timefantasy/free-graphics/).
+  - [mobilegamegraphics](https://mobilegamegraphics.com/product-category/all_products/freestuff/).
+  - [spriters-resource](https://www.spriters-resource.com/).
 
 ---
 
 ## 📚 Notions
-- JavaFX  
-- Java KeyEvents  
+- [JavaFX](https://openjfx.io/openjfx-docs/)
+- [Java KeyEvents](https://docs.oracle.com/javase/tutorial/uiswing/events/keylistener.html)
