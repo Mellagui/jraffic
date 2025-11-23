@@ -2,7 +2,6 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -60,5 +59,6 @@ public final class JrafficCanvas extends JPanel {
         // update and draw traffic
         traffic.update();
         traffic.draw(g, getWidth());
+        
     }
 }

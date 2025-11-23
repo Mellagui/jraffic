@@ -81,4 +81,13 @@ public class Car {
 
         this.color = n < 2? n <1 ? Color.RED: Color.BLUE: Color.GREEN  ;
     }
+    public void move() {
+    switch (dir) {
+        case "north" -> position.setY(position.getY() + 2);
+        case "south" -> position.setY(position.getY() - 2);
+        case "east"  -> position.setX(position.getX() + 2);
+        case "west"  -> position.setX(position.getX() - 2);
+    }
+}
+
 }
