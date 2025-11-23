@@ -1,41 +1,12 @@
-import java.awt.Color; 
+import java.awt.Color;
+import java.awt.Point; 
 import java.util.Random;
 
-// Position class
- class Pos {
-    private int x;
-    private int y;
-
-    public Pos() {
-    }
-
-    public Pos(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    // Getters and Setters
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-}
 
 public class Car {
     private String dir;
-    private boolean isMoving;
-    private Pos position;
+    private boolean isMoving = true;
+    private Point position;
     private Color color;
 
 
@@ -61,11 +32,11 @@ public class Car {
     }
 
     // Getter and Setter for position
-    public Pos getPosition() {
+    public Point getPosition() {
         return position;
     }
 
-    public void setPosition(Pos position) {
+    public void setPosition(Point position) {
         this.position = position;
     }
 
@@ -82,12 +53,17 @@ public class Car {
         this.color = n < 2? n <1 ? Color.RED: Color.BLUE: Color.GREEN  ;
     }
     public void move() {
-    switch (getDir()) {
-        case "north" -> position.setY(position.getY() + 2);
-        case "south" -> position.setY(position.getY() - 2);
-        case "east"  -> position.setX(position.getX() + 2);
-        case "west"  -> position.setX(position.getX() - 2);
+        if (!isMoving || dir == null || position == null) return;
+
+        int x = position.x;
+        int y = position.y;
+
+        switch (dir) {
+            case "north" -> position.setLocation(x, y + 2);
+            case "south" -> position.setLocation(x, y - 2);
+            case "east"  -> position.setLocation(x + 2, y);
+            case "west"  -> position.setLocation(x - 2, y);
+        }
     }
-}
 
 }

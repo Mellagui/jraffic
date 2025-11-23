@@ -12,6 +12,7 @@ public final class JrafficCanvas extends JPanel {
 
     private final Roads roads = new Roads();
     private final Traffic traffic = new Traffic();
+    private final Cars cars = new Cars();
 
     public JrafficCanvas() {
         setBackground(Color.BLACK);
@@ -23,10 +24,24 @@ public final class JrafficCanvas extends JPanel {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     System.exit(0);
                 }
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    // add vehicles here !!!
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    cars.add("east", roads.getRoadCenter(),getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_UP) {
+                    cars.add("south",roads.getRoadCenter(),getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    cars.add("west", roads.getRoadCenter(),getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    cars.add("north",roads.getRoadCenter(), getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_R) {
+                    cars.random(roads.getRoadCenter(), getWidth());
                 }
             }
+
+
         });
 
         startAnimation();
@@ -59,6 +74,11 @@ public final class JrafficCanvas extends JPanel {
         // update and draw traffic
         traffic.update();
         traffic.draw(g, getWidth());
+        cars.update(roads.getRoadCenter(),getWidth() );
+        cars.draw(g, getWidth());
+
+
+
         
     }
 }
