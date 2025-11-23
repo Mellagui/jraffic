@@ -1,33 +1,33 @@
 import java.awt.Color; 
-
+import java.util.Random;
 
 // Position class
-public class Pos {
-    private double x;
-    private double y;
+ class Pos {
+    private int x;
+    private int y;
 
     public Pos() {
     }
 
-    public Pos(double x, double y) {
+    public Pos(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
     // Getters and Setters
-    public double getX() {
+    public int getX() {
         return x;
     }
 
-    public void setX(double x) {
+    public void setX(int x) {
         this.x = x;
     }
 
-    public double getY() {
+    public int getY() {
         return y;
     }
 
-    public void setY(double y) {
+    public void setY(int y) {
         this.y = y;
     }
 }
@@ -38,7 +38,7 @@ public class Car {
     private Pos position;
     private Color color;
 
-    // Constructor
+
     public Car() {
     }
 
@@ -74,7 +74,11 @@ public class Car {
         return color;
     }
 
-    public void setColor(Color color) {
-        this.color = color;
+    public void RandomColor(Color color) {
+      final Random random = new Random();
+       int n = random.nextInt(3);
+        
+
+        this.color = n < 2? n <1 ? Color.RED: Color.BLUE: Color.GREEN  ;
     }
 }
