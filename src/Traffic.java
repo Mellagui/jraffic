@@ -20,7 +20,7 @@ public class Traffic {
     }
 
     public void update() {
-        long now = System.currentTimeMillis();
+        final long now = System.currentTimeMillis();
         if (now - last_change >= INTERVAL) {
             g_idx = (g_idx + 1) % dirs.length;
             last_change = now;

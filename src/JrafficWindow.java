@@ -11,6 +11,9 @@ public class JrafficWindow {
 
         final JrafficCanvas canvas = new JrafficCanvas();
         canvas.setSize(1000, 1000);
+        frame.add(canvas);
+
+        frame.setLocationRelativeTo(null);
         
         frame.setVisible(true);
     }
