@@ -74,7 +74,7 @@ public class Car {
         return color;
     }
 
-    public void RandomColor(Color color) {
+    public void RandomColor() {
       final Random random = new Random();
        int n = random.nextInt(3);
         
@@ -82,7 +82,7 @@ public class Car {
         this.color = n < 2? n <1 ? Color.RED: Color.BLUE: Color.GREEN  ;
     }
     public void move() {
-    switch (dir) {
+    switch (getDir()) {
         case "north" -> position.setY(position.getY() + 2);
         case "south" -> position.setY(position.getY() - 2);
         case "east"  -> position.setX(position.getX() + 2);
