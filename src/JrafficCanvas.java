@@ -41,7 +41,10 @@ public final class JrafficCanvas extends JPanel {
 
     public void startAnimation() {
         if (animation != null && animation.isRunning()) return;
-        animation = new Timer(16, e -> repaint()); // ~60 FPS
+        animation = new Timer(16, e -> {
+            cars.updateAll(traffic, getWidth(), getHeight()); // MOVE CARS HERE
+            repaint(); // THEN DRAW
+        });
         animation.start();
     }
 
@@ -59,7 +62,6 @@ public final class JrafficCanvas extends JPanel {
         // update and draw traffic
         traffic.update();
         traffic.draw(g, getWidth());
-        cars.updateAll(traffic, getWidth(), getHeight());
         cars.drawAll(g);
 
     }
