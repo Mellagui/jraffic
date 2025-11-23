@@ -6,7 +6,7 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public final class JrafficCanvas extends JPanel {
-
+    private final CarsManager cars = new CarsManager();
     private Timer animation;
     // public int width, heigth;
 
@@ -24,7 +24,7 @@ public final class JrafficCanvas extends JPanel {
                     System.exit(0);
                 }
                 if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    // add vehicles here !!!
+                    cars.spawn(getWidth(), getHeight(), traffic.getGreenDirection());
                 }
             }
         });
@@ -59,6 +59,8 @@ public final class JrafficCanvas extends JPanel {
         // update and draw traffic
         traffic.update();
         traffic.draw(g, getWidth());
-        
+        cars.updateAll(traffic, getWidth(), getHeight());
+        cars.drawAll(g);
+
     }
 }

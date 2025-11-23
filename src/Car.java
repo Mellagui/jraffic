@@ -14,4 +14,24 @@ public class Car {
         this.dir = dir;
         this.color = color;
     }
+
+    public void update() {
+        if (stopped)
+            return;
+        switch (dir) {
+            case 'N' -> y -= speed;
+            case 'S' -> y += speed;
+            case 'E' -> x += speed;
+            case 'W' -> x -= speed;
+        }
+    }
+
+    public void draw(Graphics g) {
+        g.setColor(color);
+        g.fillRect(x - 10, y - 10, 20, 20);
+    }
+
+    public boolean isOffScreen(int w, int h) {
+        return x < -50 || x > w + 50 || y < -50 || y > h + 50;
+    }
 }
