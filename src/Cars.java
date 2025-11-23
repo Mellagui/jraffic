@@ -76,8 +76,8 @@ public class Cars {
         final Boolean can = switch (c_dir) {
             case "north" -> c_pos.y >= size + gap;
             case "south" -> c_pos.y + (size * 2) + gap <= w;
-            case "east" ->  c_pos.x >= size + gap;
-            default ->      c_pos.x + (size * 2) + gap <= w;
+            case "east"  -> c_pos.x >= size + gap;
+            default      -> c_pos.x + (size * 2) + gap <= w;
         };
 
         if (c_list.size() * (size + gap) >= distance - (size + gap)) return false;
