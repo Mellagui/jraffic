@@ -1,93 +1,17 @@
-import java.awt.Color; 
-import java.util.Random;
-
-// Position class
- class Pos {
-    private int x;
-    private int y;
-
-    public Pos() {
-    }
-
-    public Pos(int x, int y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    // Getters and Setters
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-}
+import java.awt.Color;
+import java.awt.Graphics;
 
 public class Car {
-    private String dir;
-    private boolean isMoving;
-    private Pos position;
-    private Color color;
+    public int x, y;
+    public int speed = 3;
+    public char dir; // 'N', 'S', 'E', 'W'
+    public boolean stopped = false;
+    public Color color;
 
-
-    public Car() {
-    }
-
-    // Getter and Setter for dir
-    public String getDir() {
-        return dir;
-    }
-
-    public void setDir(String dir) {
+    public Car(int x, int y, char dir, Color color) {
+        this.x = x;
+        this.y = y;
         this.dir = dir;
+        this.color = color;
     }
-
-    // Getter and Setter for isMoving
-    public boolean isMoving() {
-        return isMoving;
-    }
-
-    public void setMoving(boolean isMoving) {
-        this.isMoving = isMoving;
-    }
-
-    // Getter and Setter for position
-    public Pos getPosition() {
-        return position;
-    }
-
-    public void setPosition(Pos position) {
-        this.position = position;
-    }
-
-    // Getter and Setter for color
-    public Color getColor() {
-        return color;
-    }
-
-    public void RandomColor() {
-      final Random random = new Random();
-       int n = random.nextInt(3);
-        
-
-        this.color = n < 2? n <1 ? Color.RED: Color.BLUE: Color.GREEN  ;
-    }
-    public void move() {
-    switch (getDir()) {
-        case "north" -> position.setY(position.getY() + 2);
-        case "south" -> position.setY(position.getY() - 2);
-        case "east"  -> position.setX(position.getX() + 2);
-        case "west"  -> position.setX(position.getX() - 2);
-    }
-}
-
 }
