@@ -68,7 +68,7 @@ public final class JrafficCanvas extends JPanel {
 
         g.setColor(Color.WHITE);
         g.drawString("Press <ESCAPE> to exit the app", 20, 20);
-        g.drawString("Press <SPACE> to add vehicle.", 20, 40);
+        g.drawString("Press <r> to add random vehicle.", 20, 40);
 
         roads.draw(g, getWidth(), getHeight());
         traffic.setTrafficPositions(roads.getTrafficPlace());
