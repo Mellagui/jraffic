@@ -7,6 +7,7 @@ public class Traffic {
     private String greenDirection = null;
     private long last_change = System.currentTimeMillis();
     private static final long INTERVAL = 5000L;
+    private static final long MAX_GREEN_TIME = 15000L; // 15 seconds
     private boolean isClearing = false;
     private Map<String, Long> waitingTimes = new HashMap<>();
 
@@ -39,18 +40,35 @@ public class Traffic {
             if (cars.isIntersectionClear()) {
                 findNextGreenDirection(cars);
             }
-        } else {
-            if (now - last_change >= INTERVAL) {
-                if (greenDirection != null) {
-                    int capacity = cars.getLaneCapacity(w);
-                    int waiting = cars.getCarsWaiting().get(greenDirection);
-                    if (waiting >= capacity) {
-                        last_change = now; // Extend green time
-                        return;
-                    }
+            return;
+        }
+
+        if (greenDirection == null) {
+            findNextGreenDirection(cars);
+            return;
+        }
+
+        long greenTime = now - last_change;
+
+        boolean shouldSwitch = false;
+        if (greenTime >= MAX_GREEN_TIME) {
+            shouldSwitch = true;
+        } else if (greenTime >= INTERVAL) {
+            Map<String, Integer> carsWaiting = cars.getCarsWaiting();
+            int otherCarsWaiting = 0;
+            for (Map.Entry<String, Integer> entry : carsWaiting.entrySet()) {
+                if (!entry.getKey().equals(greenDirection)) {
+                    otherCarsWaiting += entry.getValue();
                 }
-                isClearing = true;
             }
+
+            if (otherCarsWaiting > 0) {
+                shouldSwitch = true;
+            }
+        }
+
+        if (shouldSwitch) {
+            isClearing = true;
         }
     }
 
