@@ -4,19 +4,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Traffic {
-    private final String[] dirs = {"north", "east", "south", "west"};
-    private int g_idx = 0;
+    private String greenDirection = null;
     private long last_change = System.currentTimeMillis();
     private static final long INTERVAL = 5000L;
     private boolean isClearing = false;
+    private Map<String, Long> waitingTimes = new HashMap<>();
 
     private Map<String, Point> t_pos = new HashMap<>();
 
+    public Traffic() {
+        waitingTimes.put("north", 0L);
+        waitingTimes.put("east", 0L);
+        waitingTimes.put("south", 0L);
+        waitingTimes.put("west", 0L);
+    }
     public String getGreenDirection() {
         if (isClearing) {
             return null;
         }
-        return dirs[g_idx];
+        return greenDirection;
     }
 
     public boolean isClearing() {
@@ -27,21 +33,56 @@ public class Traffic {
         t_pos = traffic_positions;
     }
 
-    public void update(Cars cars) {
+    public void update(Cars cars, int w) {
         final long now = System.currentTimeMillis();
         if (isClearing) {
             if (cars.isIntersectionClear()) {
-                switchToNextGreen();
+                findNextGreenDirection(cars);
             }
         } else {
             if (now - last_change >= INTERVAL) {
+                if (greenDirection != null) {
+                    int capacity = cars.getLaneCapacity(w);
+                    int waiting = cars.getCarsWaiting().get(greenDirection);
+                    if (waiting >= capacity) {
+                        last_change = now; // Extend green time
+                        return;
+                    }
+                }
                 isClearing = true;
             }
         }
     }
 
-    private void switchToNextGreen() {
-        g_idx = (g_idx + 1) % dirs.length;
+    private void findNextGreenDirection(Cars cars) {
+        Map<String, Integer> carsWaiting = cars.getCarsWaiting();
+        
+        for (String dir : waitingTimes.keySet()) {
+            waitingTimes.put(dir, waitingTimes.get(dir) + 1);
+        }
+
+        double maxScore = -1;
+        String nextGreen = null;
+
+        for (Map.Entry<String, Integer> entry : carsWaiting.entrySet()) {
+            String direction = entry.getKey();
+            int waitingCount = entry.getValue();
+            long waitingTime = waitingTimes.get(direction);
+            
+            if (waitingCount > 0) {
+                double score = waitingCount * waitingTime;
+                if (score > maxScore) {
+                    maxScore = score;
+                    nextGreen = direction;
+                }
+            }
+        }
+
+        if (nextGreen != null) {
+            waitingTimes.put(nextGreen, 0L); // Reset waiting time for the new green direction
+        }
+
+        greenDirection = nextGreen;
         isClearing = false;
         last_change = System.currentTimeMillis();
     }
@@ -54,7 +95,7 @@ public class Traffic {
             if (isClearing) {
                 g.setColor(java.awt.Color.RED);
             } else {
-                g.setColor(t.getKey().equals(dirs[g_idx]) ? java.awt.Color.GREEN : java.awt.Color.RED);
+                g.setColor(t.getKey().equals(greenDirection) ? java.awt.Color.GREEN : java.awt.Color.RED);
             }
             g.fillOval(p.x, p.y, size, size);
         }

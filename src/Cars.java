@@ -159,6 +159,30 @@ public class Cars {
         return true;
     }
 
+    public Map<String, Integer> getCarsWaiting() {
+        Map<String, Integer> carsWaiting = new HashMap<>();
+        for (Map.Entry<String, List<Car>> entry : mapCar.entrySet()) {
+            String direction = entry.getKey();
+            List<Car> carList = entry.getValue();
+            int waitingCount = 0;
+            for (Car car : carList) {
+                if (!car.isInIntersection()) {
+                    waitingCount++;
+                }
+            }
+            carsWaiting.put(direction, waitingCount);
+        }
+        return carsWaiting;
+    }
+
+    public int getLaneCapacity(int w) {
+        final int size = (w * 6) / 100;
+        final int gap = (w * 3) / 100;
+        final int road_w = (w * 12) / 100;
+        final int lane_length = (w / 2) - road_w;
+        return lane_length / (size + gap);
+    }
+
     public boolean isIntersectionClear() {
         for (List<Car> carList : mapCar.values()) {
             for (Car car : carList) {

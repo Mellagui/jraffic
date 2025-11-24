@@ -78,7 +78,7 @@ public final class JrafficCanvas extends JPanel {
         }
 
         // update and draw traffic
-        traffic.update(cars);
+        traffic.update(cars, getWidth());
         traffic.draw(g, getWidth());
         if (intersection != null) {
             cars.update(roads.getRoadCenter(), getWidth(), traffic, intersection);
