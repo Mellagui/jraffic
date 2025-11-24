@@ -86,45 +86,66 @@ public class Cars {
         }
     }
 
-    // Optional: get cars by direction
+    // Optional
     public List<Car> getCars(String direction) {
         return mapCar.getOrDefault(direction, new ArrayList<>());
     }
 
     public void update(Map<String, List<Point>> center, int w, Traffic traffic, Intersection intersection) {
         for (Map.Entry<String, List<Car>> en : mapCar.entrySet()) {
-            for (Car car : en.getValue()) {
-                car.move(traffic, intersection, w);
+            List<Car> carsInLane = en.getValue();
+            for (int i = carsInLane.size() - 1; i >= 0; i--) {
+                Car currentCar = carsInLane.get(i);
+                Car carInFront = null;
+
+                if (i > 0) {
+                    carInFront = carsInLane.get(i - 1);
+                }
+                
+                currentCar.move(traffic, intersection, w, carInFront);
             }
+        }
+
+        final int buffer = 100;
+        for (List<Car> carList : mapCar.values()) {
+            carList.removeIf(car -> {
+                if (!car.hasLeftIntersection()) {
+                    return false; 
+                }
+                Point pos = car.getPosition();
+                return pos.x < -buffer || pos.x > w + buffer || pos.y < -buffer || pos.y > w + buffer;
+            });
         }
     }
 
-    public boolean canadd(String deriction, Map<String, List<Point>> center, int w) {
-        List<Point> line = center.get("north");
-        int distinse = line.get(0).y;
+    public boolean canadd(String direction, Map<String, List<Point>> center, int w) {
         final int size = (w * 6) / 100;
         final int gap = (w * 3) / 100;
-        if (mapCar.get(deriction).isEmpty()) {
+
+        final int road_w = (w * 12) / 100;
+        final int lane_length = (w / 2) - road_w;
+        final int capacity = lane_length / (size + gap);
+
+        List<Car> carsInLane = getCars(direction);
+        if (carsInLane.size() >= capacity) {
+            return false;
+        }
+
+        if (carsInLane.isEmpty()) {
             return true;
         }
-        Point last = mapCar.get(deriction).get(mapCar.get(deriction).size() - 1).getPosition();
-        //    Boolean can =  true ;
-        Boolean can = switch (deriction) {
-            case "north" ->
-                last.y >= size + gap;
-            case "south" ->
-                last.y + (size * 2) + gap <= w;
-            case "east" ->
-                last.x >= size + gap;
-            default ->
-                last.x + (size * 2) + gap <= w;
+
+        Point lastCarPos = carsInLane.get(carsInLane.size() - 1).getPosition();
+        
+        boolean isSpawnPointClear = switch (direction) {
+            case "north" -> lastCarPos.y > size + gap;
+            case "east" -> lastCarPos.x > size + gap;
+            case "south" -> lastCarPos.y < w - (size + gap);
+            case "west" -> lastCarPos.x < w - (size + gap);
+            default -> false;
         };
-        if (getCars(deriction).size() * (size + gap) >= distinse - (size + gap)) {
-            return false;
 
-        }
-        return can && true;
-
+        return isSpawnPointClear;
     }
 
     public void draw(Graphics g, int w) {
