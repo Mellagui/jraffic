@@ -3,7 +3,7 @@ import javax.swing.JFrame;
 public class JrafficWindow {
     
     public JrafficWindow() {
-        final JFrame frame = new JFrame("Jaikin - Chaikin's Algorithm");
+        final JFrame frame = new JFrame("Jraffic -Road intersection");
         
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setResizable(false);
