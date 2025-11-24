@@ -1,168 +1,162 @@
 import java.awt.Color;
-import java.awt.Graphics;
 import java.awt.Point;
-import java.util.List;
-import java.util.Map;
+import java.awt.Rectangle;
 import java.util.Random;
 
 public class Car {
+
+    private String nextDir;
+    private Point turningPoint;
+
     private String dir;
-    private final String next_dir;
-    
+    private boolean isMoving = true;
     private Point position;
-    private Point turn_point;
+    private Color color;
+    private boolean isInIntersection = false;
+    private boolean hasLeftIntersection = false;
 
-    private final int color;
-    private final int w;
-    
-    private boolean moving;
-    private boolean passed;
-    
-    public Car(String direction, Map<String, List<Point>> center, int width) {
-        moving = true;
-        passed = false;
-        dir = direction;
-        w = width;
-        color = randomColor();
-        position = startPosition(center);
-        turn_point = turningPoint(center);
-        next_dir = nextDirection();
+    public Car() {
     }
 
-    public boolean getPassed() {
-        return passed;
-    }
-
+    // Getter and Setter for dir
     public String getDir() {
         return dir;
     }
-    public void setDir(String direction) {
-        dir = direction;
+
+    public void setDir(String dir) {
+        this.dir = dir;
     }
 
-    public boolean getMoving() {
-        return moving;
-    }
-    public void setMoving(boolean moving) {
-        this.moving = moving;
+    // Getter and Setter for isMoving
+    public boolean isMoving() {
+        return isMoving;
     }
 
+    public void setMoving(boolean isMoving) {
+        this.isMoving = isMoving;
+    }
+
+    // Getter and Setter for position
     public Point getPosition() {
         return position;
     }
+
     public void setPosition(Point position) {
         this.position = position;
     }
 
-    public int getColor() {
+    // Getter and Setter for color
+    public Color getColor() {
         return color;
     }
 
     public String getNextDir() {
-        return next_dir;
+        return nextDir;
     }
 
     public Point getTurningPoint() {
-        return turn_point;
-    }
-    public void setTurningPoint(Point turn_point) {
-        this.turn_point = turn_point;
+        return turningPoint;
     }
 
-    public void setPassed(Map<String, List<Point>> center) {
-        final List<Point> line = center.get(dir);
-
-        passed = switch (dir) {
-            case "north" -> position.y >= line.get(0).y - ((w * 6) / 100);
-            case "south" -> position.y <= line.get(0).y;
-            case "east"  -> position.x >= line.get(0).x - ((w * 6) / 100);
-            default      -> position.x <= line.get(0).x;
-        };
+    public boolean isInIntersection() {
+        return isInIntersection;
     }
 
-    private int randomColor() {
+    public boolean hasLeftIntersection() {
+        return hasLeftIntersection;
+    }
+
+    public void setNextDir(String nextDir) {
+        this.nextDir = nextDir;
+    }
+
+    public void setTurningPoint(Point turningPoint) {
+        this.turningPoint = turningPoint;
+    }
+
+    public int RandomColor() {
         final Random random = new Random();
-        return random.nextInt(3);
+        int n = random.nextInt(3);
+
+        this.color = n < 2 ? n < 1 ? Color.RED : Color.BLUE : Color.GREEN;
+
+        return n;
     }
 
-    public void move() {
-        if (!moving) return;
+    public void move(Traffic traffic, Intersection intersection, int w, Car carInFront) {
+        final int size = (w * 6) / 100;
+        final int safetyGap = (w * 6) / 100;
 
-        final int x = position.x;
-        final int y = position.y;
+        Rectangle carBounds = new Rectangle(position.x, position.y, size, size);
+        if (isInIntersection && !hasLeftIntersection && !intersection.getBounds().intersects(carBounds)) {
+            hasLeftIntersection = true;
+        }
+        if (!isInIntersection && intersection.getBounds().intersects(carBounds)) {
+            isInIntersection = true;
+        }
+
+        if (isInIntersection && !hasLeftIntersection) {
+
+            setMoving(true);
+        } else {
+            setMoving(true);
+
+            if (carInFront != null) {
+                int delta = 0;
+                if (this.dir.equals(carInFront.getDir())) {
+                    switch (dir) {
+                        case "north" -> delta = carInFront.getPosition().y - getPosition().y;
+                        case "south" -> delta = getPosition().y - carInFront.getPosition().y;
+                        case "east" -> delta = carInFront.getPosition().x - getPosition().x;
+                        case "west" -> delta = getPosition().x - carInFront.getPosition().x;
+                    }
+                    if (delta > 0 && delta < size + safetyGap) {
+                        setMoving(false);
+                    }
+                }
+            }
+
+            if (isMoving() && !isInIntersection) {
+                String greenDirection = traffic.getGreenDirection();
+                if (!dir.equals(greenDirection)) {
+                    Point nextPos = new Point(position);
+                    switch (dir) {
+                        case "north" -> nextPos.translate(0, 3);
+                        case "south" -> nextPos.translate(0, -3);
+                        case "east" -> nextPos.translate(3, 0);
+                        case "west" -> nextPos.translate(-3, 0);
+                    }
+                    Rectangle nextCarBounds = new Rectangle(nextPos.x, nextPos.y, size, size);
+                    if (intersection.getBounds().intersects(nextCarBounds)) {
+                        setMoving(false);
+                    }
+                }
+            }
+        }
+
+        if (!isMoving() || dir == null || position == null) {
+            return;
+        }
+
+        if (turningPoint != null) {
+            boolean turn = false;
+            switch (dir) {
+                case "north" -> turn = position.y >= turningPoint.y;
+                case "south" -> turn = position.y <= turningPoint.y;
+                case "east" -> turn = position.x >= turningPoint.x;
+                case "west" -> turn = position.x <= turningPoint.x;
+            }
+            if (turn) {
+                setDir(nextDir);
+                setTurningPoint(null); // Turn only once
+            }
+        }
 
         switch (dir) {
-            case "north" -> {
-                if (x >= turn_point.x && y >= turn_point.y) setDir(next_dir);
-                position.setLocation(x, y + 1);
-            }
-            case "south" -> {
-                if (x <= turn_point.x && y <= turn_point.y) setDir(next_dir);
-                position.setLocation(x, y - 1);
-            }
-            case "east" -> {
-                if (x >= turn_point.x && y >= turn_point.y) setDir(next_dir);
-                position.setLocation(x + 1, y);
-            }
-            default -> {
-                if (x <= turn_point.x && y <= turn_point.y) setDir(next_dir);
-                position.setLocation(x - 1, y);
-            }
+            case "north" -> position.translate(0, 1);
+            case "south" -> position.translate(0, -1);
+            case "east" -> position.translate(1, 0);
+            case "west" -> position.translate(-1, 0);
         }
-    }
-
-    public void handleColisions(Car car) {
-        final String c_dir = car.getDir();
-        final Point c_pos = car.getPosition();
-        final int size = (w * 6) / 100;
-        final int gap = (w * 3) / 100;
-
-        switch (c_dir) {
-            case "north" -> moving = position.y < c_pos.y - (gap + size);
-            case "south" -> moving = position.y > c_pos.y + (gap + size);
-            case "east"  -> moving = position.x < c_pos.x - (gap + size);
-            default      -> moving = position.x > c_pos.x + (gap + size);
-        }
-    }
-
-    public void draw(Graphics g) {
-        final int size = (w * 6) / 100;
-        g.setColor(color < 2 ? color < 1 ? Color.RED : Color.BLUE : Color.GREEN);
-        g.fillRect(position.x, position.y, size, size);
-    }
-
-    private String nextDirection() {
-        return switch (dir) {
-            case "north" -> color < 2 ? color < 1 ? "west" : dir : "east";
-            case "south" -> color < 2 ? color < 1 ? "east" : dir : "west";
-            case "east" -> color < 2 ? color < 1 ? "north" : dir : "south";
-            default -> color < 2 ? color < 1 ? "south" : dir : "north";
-        };
-    }
-
-    private Point turningPoint(Map<String, List<Point>> center) {
-        final List<Point> line = center.get(dir);
-        final int size = (w * 6) / 100;
-        final int gap = (w * 3) / 100;
-
-        return switch (dir) {
-            case "north" -> color < 2 ? color < 1 ? new Point(line.get(0).x + gap, line.get(0).y + gap) : position : new Point(line.get(0).x + gap, line.get(0).y + gap + (size*2));
-            case "south" -> color < 2 ? color < 1 ? new Point(line.get(1).x - (gap+size), w/2 + gap/2) : position : new Point(line.get(1).x - (gap+size), w/2 - (size*2 - gap/2));
-            case "east" -> color < 2 ? color < 1 ? new Point(line.get(0).x + gap, w/2 - (size*2 - gap/2)) : position : new Point(w/2 + gap, w/2 - (size*2 - gap/2));
-            default -> color < 2 ? color < 1 ? new Point(w/2 + gap, line.get(0).y + gap) : position : new Point(w/2 - (gap+size), line.get(0).y + gap + (size*2));
-        };
-    }
-
-    private Point startPosition(Map<String, List<Point>> center) {
-        final List<Point> line = center.get(dir);
-        final int size = (w * 6) / 100;
-        final int gap = (w * 3) / 100;
-
-        return switch (dir) {
-            case "north" -> new Point(line.get(0).x + gap, 0);
-            case "south" -> new Point(line.get(1).x - (gap+size), w);
-            case "east" -> new Point(0, line.get(1).y - (gap+size));
-            default -> new Point(w, line.get(0).y + gap);
-        };
     }
 }
