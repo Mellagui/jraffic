@@ -120,7 +120,7 @@ public class Cars {
 
     public boolean canadd(String direction, Map<String, List<Point>> center, int w) {
         final int size = (w * 6) / 100;
-        final int gap = (w * 3) / 100;
+        final int gap = (w * 6) / 100;
 
         final int road_w = (w * 12) / 100;
         final int lane_length = (w / 2) - road_w;

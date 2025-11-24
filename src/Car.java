@@ -85,7 +85,7 @@ public class Car {
 
     public void move(Traffic traffic, Intersection intersection, int w, Car carInFront) {
         final int size = (w * 6) / 100;
-        final int safetyGap = (w * 3) / 100;
+        final int safetyGap = (w * 6) / 100;
 
         Rectangle carBounds = new Rectangle(position.x, position.y, size, size);
         if (isInIntersection && !hasLeftIntersection && !intersection.getBounds().intersects(carBounds)) {
@@ -121,10 +121,10 @@ public class Car {
                 if (!dir.equals(greenDirection)) {
                     Point nextPos = new Point(position);
                     switch (dir) {
-                        case "north" -> nextPos.translate(0, 1);
-                        case "south" -> nextPos.translate(0, -1);
-                        case "east" -> nextPos.translate(1, 0);
-                        case "west" -> nextPos.translate(-1, 0);
+                        case "north" -> nextPos.translate(0, 3);
+                        case "south" -> nextPos.translate(0, -3);
+                        case "east" -> nextPos.translate(3, 0);
+                        case "west" -> nextPos.translate(-3, 0);
                     }
                     Rectangle nextCarBounds = new Rectangle(nextPos.x, nextPos.y, size, size);
                     if (intersection.getBounds().intersects(nextCarBounds)) {
