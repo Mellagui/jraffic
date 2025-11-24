@@ -36,7 +36,6 @@ public class Traffic {
     public void update(Cars cars, int w) {
         final long now = System.currentTimeMillis();
 
-        // If lights are clearing → wait until intersection empties
         if (isClearing) {
             if (cars.isIntersectionClear()) {
                 findNextGreenDirection(cars);
@@ -44,24 +43,19 @@ public class Traffic {
             return;
         }
 
-        // First cycle → choose a green
         if (greenDirection == null) {
             findNextGreenDirection(cars);
             return;
         }
 
-        // Normal running: should we switch?
         if (now - last_change >= INTERVAL) {
-
             int capacity = cars.getLaneCapacity(w);
             int waiting = cars.getCarsWaiting().get(greenDirection);
 
-            // Extension allowed but NEVER reset timer (avoids infinite green)
             if (waiting >= capacity && (now - last_change) < MAX_GREEN) {
                 return;
             }
 
-            // Otherwise → start clearing phase
             isClearing = true;
         }
     }
@@ -69,43 +63,35 @@ public class Traffic {
     private void findNextGreenDirection(Cars cars) {
         Map<String, Integer> carsWaiting = cars.getCarsWaiting();
 
-        // Increase starvation counters
+        // Increase waiting time counters
         for (String dir : waitingTimes.keySet()) {
             waitingTimes.put(dir, waitingTimes.get(dir) + 1);
         }
 
-        double maxScore = -1;
-        String nextGreen = null;
+        String next = null;
+        long bestScore = -1;
 
-        String previous = this.greenDirection;
+        for (String dir : waitingTimes.keySet()) {
 
-        for (Map.Entry<String, Integer> entry : carsWaiting.entrySet()) {
-            String direction = entry.getKey();
-            int count = entry.getValue();
+            int carCount = carsWaiting.get(dir);
 
-            if (count > 0) {
-                long time = waitingTimes.get(direction);
+            if (carCount == 0)
+                continue;
 
-                // Balanced score: number × waiting time
-                double score = count * time;
+            // FAIR SCORE = waitingTime dominates heavily
+            long score = waitingTimes.get(dir) * 100L + carCount;
 
-                // Slight penalty for repeating the same direction
-                if (direction.equals(previous)) {
-                    score *= 0.7;
-                }
-
-                if (score > maxScore) {
-                    maxScore = score;
-                    nextGreen = direction;
-                }
+            if (score > bestScore) {
+                bestScore = score;
+                next = dir;
             }
         }
 
-        if (nextGreen != null) {
-            waitingTimes.put(nextGreen, 0L); // reset starvation timer
+        if (next != null) {
+            waitingTimes.put(next, 0L);
         }
 
-        greenDirection = nextGreen;
+        greenDirection = next;
         isClearing = false;
         last_change = System.currentTimeMillis();
     }
@@ -119,9 +105,10 @@ public class Traffic {
             if (isClearing) {
                 g.setColor(java.awt.Color.RED);
             } else {
-                g.setColor(t.getKey().equals(greenDirection)
-                        ? java.awt.Color.GREEN
-                        : java.awt.Color.RED);
+                g.setColor(
+                        t.getKey().equals(greenDirection)
+                                ? java.awt.Color.GREEN
+                                : java.awt.Color.RED);
             }
 
             g.fillOval(p.x, p.y, size, size);
