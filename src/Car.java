@@ -58,6 +58,10 @@ public class Car {
         return turningPoint;
     }
 
+    public boolean isInIntersection() {
+        return isInIntersection;
+    }
+
     public boolean hasLeftIntersection() {
         return hasLeftIntersection;
     }

@@ -148,6 +148,17 @@ public class Cars {
         return isSpawnPointClear;
     }
 
+    public boolean isIntersectionClear() {
+        for (List<Car> carList : mapCar.values()) {
+            for (Car car : carList) {
+                if (car.isInIntersection() && !car.hasLeftIntersection()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public void draw(Graphics g, int w) {
         final int size = (w * 6) / 100;
         for (Map.Entry<String, List<Car>> en : mapCar.entrySet()) {
