@@ -6,8 +6,9 @@ import java.util.Map;
 public class Traffic {
     private String greenDirection = null;
     private long last_change = System.currentTimeMillis();
-    private static final long INTERVAL = 5000L;
-    private static final long MAX_GREEN_TIME = 15000L; // 15 seconds
+    private static final long INTERVAL = 5000L; // base green duration
+    private static final long MAX_GREEN = 15000L; // absolute max allowed green
+
     private boolean isClearing = false;
     private Map<String, Long> waitingTimes = new HashMap<>();
 
@@ -19,11 +20,9 @@ public class Traffic {
         waitingTimes.put("south", 0L);
         waitingTimes.put("west", 0L);
     }
+
     public String getGreenDirection() {
-        if (isClearing) {
-            return null;
-        }
-        return greenDirection;
+        return isClearing ? null : greenDirection;
     }
 
     public boolean isClearing() {
@@ -36,6 +35,8 @@ public class Traffic {
 
     public void update(Cars cars, int w) {
         final long now = System.currentTimeMillis();
+
+        // If lights are clearing → wait until intersection empties
         if (isClearing) {
             if (cars.isIntersectionClear()) {
                 findNextGreenDirection(cars);
@@ -43,38 +44,32 @@ public class Traffic {
             return;
         }
 
+        // First cycle → choose a green
         if (greenDirection == null) {
             findNextGreenDirection(cars);
             return;
         }
 
-        long greenTime = now - last_change;
+        // Normal running: should we switch?
+        if (now - last_change >= INTERVAL) {
 
-        boolean shouldSwitch = false;
-        if (greenTime >= MAX_GREEN_TIME) {
-            shouldSwitch = true;
-        } else if (greenTime >= INTERVAL) {
-            Map<String, Integer> carsWaiting = cars.getCarsWaiting();
-            int otherCarsWaiting = 0;
-            for (Map.Entry<String, Integer> entry : carsWaiting.entrySet()) {
-                if (!entry.getKey().equals(greenDirection)) {
-                    otherCarsWaiting += entry.getValue();
-                }
+            int capacity = cars.getLaneCapacity(w);
+            int waiting = cars.getCarsWaiting().get(greenDirection);
+
+            // Extension allowed but NEVER reset timer (avoids infinite green)
+            if (waiting >= capacity && (now - last_change) < MAX_GREEN) {
+                return;
             }
 
-            if (otherCarsWaiting > 0) {
-                shouldSwitch = true;
-            }
-        }
-
-        if (shouldSwitch) {
+            // Otherwise → start clearing phase
             isClearing = true;
         }
     }
 
     private void findNextGreenDirection(Cars cars) {
         Map<String, Integer> carsWaiting = cars.getCarsWaiting();
-        
+
+        // Increase starvation counters
         for (String dir : waitingTimes.keySet()) {
             waitingTimes.put(dir, waitingTimes.get(dir) + 1);
         }
@@ -82,13 +77,23 @@ public class Traffic {
         double maxScore = -1;
         String nextGreen = null;
 
+        String previous = this.greenDirection;
+
         for (Map.Entry<String, Integer> entry : carsWaiting.entrySet()) {
             String direction = entry.getKey();
-            int waitingCount = entry.getValue();
-            long waitingTime = waitingTimes.get(direction);
-            
-            if (waitingCount > 0) {
-                double score = waitingCount * waitingTime;
+            int count = entry.getValue();
+
+            if (count > 0) {
+                long time = waitingTimes.get(direction);
+
+                // Balanced score: number × waiting time
+                double score = count * time;
+
+                // Slight penalty for repeating the same direction
+                if (direction.equals(previous)) {
+                    score *= 0.7;
+                }
+
                 if (score > maxScore) {
                     maxScore = score;
                     nextGreen = direction;
@@ -97,7 +102,7 @@ public class Traffic {
         }
 
         if (nextGreen != null) {
-            waitingTimes.put(nextGreen, 0L); // Reset waiting time for the new green direction
+            waitingTimes.put(nextGreen, 0L); // reset starvation timer
         }
 
         greenDirection = nextGreen;
@@ -109,12 +114,16 @@ public class Traffic {
         final int size = (w * 6) / 100;
 
         for (Map.Entry<String, Point> t : t_pos.entrySet()) {
-            final Point p = t.getValue();
+            Point p = t.getValue();
+
             if (isClearing) {
                 g.setColor(java.awt.Color.RED);
             } else {
-                g.setColor(t.getKey().equals(greenDirection) ? java.awt.Color.GREEN : java.awt.Color.RED);
+                g.setColor(t.getKey().equals(greenDirection)
+                        ? java.awt.Color.GREEN
+                        : java.awt.Color.RED);
             }
+
             g.fillOval(p.x, p.y, size, size);
         }
     }
