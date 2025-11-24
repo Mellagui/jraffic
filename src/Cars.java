@@ -126,26 +126,37 @@ public class Cars {
         final int lane_length = (w / 2) - road_w;
         final int capacity = lane_length / (size + gap);
 
-        List<Car> carsInLane = getCars(direction);
-        if (carsInLane.size() >= capacity) {
+        List<Car> carsFromThisSpawner = getCars(direction);
+
+        int carsInLaneBeforeIntersection = 0;
+        for (Car car : carsFromThisSpawner) {
+            if (!car.getDir().equals(direction)) {
+                continue;
+            }
+
+            Point carPos = car.getPosition();
+            boolean isNearSpawn = switch (direction) {
+                case "north" -> carPos.y < size + gap;
+                case "east"  -> carPos.x < size + gap;
+                case "south" -> carPos.y > w - (size + gap);
+                case "west"  -> carPos.x > w - (size + gap);
+                default -> false;
+            };
+            if (isNearSpawn) {
+                return false;
+            }
+
+            // If not near spawn, check if it's in the pre-intersection part of the lane for capacity count
+            if (!car.isInIntersection()) {
+                carsInLaneBeforeIntersection++;
+            }
+        }
+
+        if (carsInLaneBeforeIntersection >= capacity) {
             return false;
         }
 
-        if (carsInLane.isEmpty()) {
-            return true;
-        }
-
-        Point lastCarPos = carsInLane.get(carsInLane.size() - 1).getPosition();
-        
-        boolean isSpawnPointClear = switch (direction) {
-            case "north" -> lastCarPos.y > size + gap;
-            case "east" -> lastCarPos.x > size + gap;
-            case "south" -> lastCarPos.y < w - (size + gap);
-            case "west" -> lastCarPos.x < w - (size + gap);
-            default -> false;
-        };
-
-        return isSpawnPointClear;
+        return true;
     }
 
     public boolean isIntersectionClear() {
