@@ -1,3 +1,4 @@
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyAdapter;
@@ -12,6 +13,7 @@ public final class JrafficCanvas extends JPanel {
     private final Roads roads = new Roads();
     private final Traffic traffic = new Traffic();
     private final Cars cars = new Cars();
+    private Intersection intersection;
 
     public JrafficCanvas() {
         setBackground(Color.BLACK);
@@ -39,6 +41,8 @@ public final class JrafficCanvas extends JPanel {
                     cars.random(roads.getRoadCenter(), getWidth());
                 }
             }
+
+
         });
 
         startAnimation();
@@ -61,15 +65,27 @@ public final class JrafficCanvas extends JPanel {
 
         g.setColor(Color.WHITE);
         g.drawString("Press <ESCAPE> to exit the app", 20, 20);
-        g.drawString("Press <SPACE> to add vehicle.", 20, 40);
+        g.drawString("Press <r> to add random vehicle.", 20, 40);
 
         roads.draw(g, getWidth(), getHeight());
         traffic.setTrafficPositions(roads.getTrafficPlace());
 
-        traffic.update();
-        traffic.draw(g, getWidth());
+        if (intersection == null) {
+            intersection = new Intersection(roads.getRoadCenter());
+        }
 
-        cars.update(roads.getRoadCenter(), getWidth() );
-        cars.draw(g);
+        // update and draw traffic
+        traffic.update(cars, getWidth());
+        traffic.draw(g, getWidth());
+        if (intersection != null) {
+            cars.update(roads.getRoadCenter(), getWidth(), traffic, intersection);
+        }
+        cars.draw(g, getWidth());
+
+        if (intersection != null) {
+            g.setColor(Color.CYAN);
+            g.drawRect(intersection.getBounds().x, intersection.getBounds().y, intersection.getBounds().width, intersection.getBounds().height);
+        }
     }
 }
+
