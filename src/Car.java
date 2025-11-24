@@ -1,76 +1,139 @@
+
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.util.Random;
 
 public class Car {
-    public int x, y;
-    public int speed = 2;
-    public char dir; // 'N', 'S', 'E', 'W'
-    public boolean stopped = false;
-    public Color color;
 
-    public Car(int x, int y, char dir, Color color) {
-        this.x = x;
-        this.y = y;
+    private String nextDir;
+    private Point turningPoint ;
+
+    private String dir;
+    private boolean isMoving = true;
+    private Point position;
+    private Color color;
+
+    public Car() {
+    }
+
+    // Getter and Setter for dir
+    public String getDir() {
+        return dir;
+    }
+
+    public void setDir(String dir) {
         this.dir = dir;
-        this.color = color;
     }
 
-    public void update() {
-        if (stopped)
-            return;
-        switch (dir) {
-            case 'N' -> y -= speed;
-            case 'S' -> y += speed;
-            case 'E' -> x += speed;
-            case 'W' -> x -= speed;
-        }
+    // Getter and Setter for isMoving
+    public boolean isMoving() {
+        return isMoving;
     }
 
-    public void draw(Graphics g) {
-        int carLength = 30;
-        int carWidth = 16;
+    public void setMoving(boolean isMoving) {
+        this.isMoving = isMoving;
+    }
 
-        if (dir == 'N' || dir == 'S') {
-            // Car body (vertical)
-            g.setColor(color);
-            g.fillRoundRect(x - carWidth / 2, y - carLength / 2, carWidth, carLength, 6, 6);
+    // Getter and Setter for position
+    public Point getPosition() {
+        return position;
+    }
 
-            // Wheels
-            g.setColor(Color.BLACK);
-            g.fillRect(x - carWidth / 2 - 3, y - carLength / 4, 4, 8);
-            g.fillRect(x + carWidth / 2 - 1, y - carLength / 4, 4, 8);
-            g.fillRect(x - carWidth / 2 - 3, y + carLength / 4 - 8, 4, 8);
-            g.fillRect(x + carWidth / 2 - 1, y + carLength / 4 - 8, 4, 8);
+    public void setPosition(Point position) {
+        this.position = position;
+    }
 
-            // Front indicator
-            g.setColor(Color.WHITE);
-            if (dir == 'N')
-                g.fillRect(x - 4, y - carLength / 2 + 2, 8, 4);
-            else
-                g.fillRect(x - 4, y + carLength / 2 - 6, 8, 4);
+    // Getter and Setter for color
+    public Color getColor() {
+        return color;
+    }
 
+    public String getNextDir() {
+        return nextDir;
+    }
+
+    public Point getTurningPoint() {
+        return turningPoint;
+    }
+
+    public void setNextDir(String nextDir) {
+        this.nextDir = nextDir;
+    }
+
+    public void setTurningPoint(Point turningPoint) {
+        this.turningPoint = turningPoint;
+    }
+
+    public int RandomColor() {
+        final Random random = new Random();
+        int n = random.nextInt(3);
+
+        this.color = n < 2 ? n < 1 ? Color.RED : Color.BLUE : Color.GREEN;
+
+        return n;
+    }
+
+    public void move(Traffic traffic, Intersection intersection, int w) {
+        String greenDirection = traffic.getGreenDirection();
+
+        if (dir.equals(greenDirection)) {
+            setMoving(true);
         } else {
-            // Car body (horizontal)
-            g.setColor(color);
-            g.fillRoundRect(x - carLength / 2, y - carWidth / 2, carLength, carWidth, 6, 6);
+            final int size = (w * 6) / 100;
+            Point nextPos = new Point(position);
+            switch (dir) {
+                case "north" -> nextPos.translate(0, 1);
+                case "south" -> nextPos.translate(0, -1);
+                case "east" -> nextPos.translate(1, 0);
+                case "west" -> nextPos.translate(-1, 0);
+            }
 
-            // Wheels
-            g.setColor(Color.BLACK);
-            g.fillRect(x - carLength / 4, y - carWidth / 2 - 3, 8, 4);
-            g.fillRect(x - carLength / 4, y + carWidth / 2 - 1, 8, 4);
-            g.fillRect(x + carLength / 4 - 8, y - carWidth / 2 - 3, 8, 4);
-            g.fillRect(x + carLength / 4 - 8, y + carWidth / 2 - 1, 8, 4);
+            Rectangle nextCarBounds = new Rectangle(nextPos.x, nextPos.y, size, size);
 
-            // Front indicator
-            g.setColor(Color.WHITE);
-            if (dir == 'E')
-                g.fillRect(x + carLength / 2 - 6, y - 4, 4, 8);
-            else
-                g.fillRect(x - carLength / 2 + 2, y - 4, 4, 8);
+            if (intersection.getBounds().intersects(nextCarBounds)) {
+                setMoving(false);
+            }
+        }
+
+        move();
+    }
+
+    public void move() {
+        if (!isMoving || dir == null || position == null) {
+            return;
+        }
+
+        int x = position.x;
+        int y = position.y;
+
+        switch (dir) {
+            case "north" -> {
+                if (turningPoint != null &&x >= turningPoint.x && y >= turningPoint.y) {
+                    setDir(nextDir);
+                }
+                position.setLocation(x, y + 1);
+            }
+            case "south" -> {
+                if (turningPoint != null &&x <= turningPoint.x && y <= turningPoint.y) {
+                    setDir(nextDir);
+                }
+                position.setLocation(x, y - 1);
+            }
+            case "east" -> {
+                if (turningPoint != null &&x >= turningPoint.x && y >= turningPoint.y) {
+                    setDir(nextDir);
+                }
+
+                position.setLocation(x + 1, y);
+            }
+            default -> {
+                if (turningPoint != null &&x <= turningPoint.x && y <= turningPoint.y) {
+                    setDir(nextDir);
+                }
+                position.setLocation(x - 1, y);
+            }
         }
     }
 
-    public boolean isOffScreen(int w, int h) {
-        return x < -50 || x > w + 50 || y < -50 || y > h + 50;
-    }
 }

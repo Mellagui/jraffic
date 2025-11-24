@@ -1,3 +1,4 @@
+
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.event.KeyAdapter;
@@ -6,12 +7,14 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public final class JrafficCanvas extends JPanel {
-    private final CarsManager cars = new CarsManager();
+
     private Timer animation;
     // public int width, heigth;
 
     private final Roads roads = new Roads();
     private final Traffic traffic = new Traffic();
+    private final Cars cars = new Cars();
+    private Intersection intersection;
 
     public JrafficCanvas() {
         setBackground(Color.BLACK);
@@ -23,10 +26,24 @@ public final class JrafficCanvas extends JPanel {
                 if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     System.exit(0);
                 }
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    cars.spawn(getWidth(), getHeight(), traffic.getGreenDirection());
+                if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+                    cars.add("east", roads.getRoadCenter(),getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_UP) {
+                    cars.add("south",roads.getRoadCenter(),getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+                    cars.add("west", roads.getRoadCenter(),getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+                    cars.add("north",roads.getRoadCenter(), getWidth());
+                }
+                if (e.getKeyCode() == KeyEvent.VK_R) {
+                    cars.random(roads.getRoadCenter(), getWidth());
                 }
             }
+
+
         });
 
         startAnimation();
@@ -41,10 +58,7 @@ public final class JrafficCanvas extends JPanel {
 
     public void startAnimation() {
         if (animation != null && animation.isRunning()) return;
-        animation = new Timer(16, e -> {
-            cars.updateAll(traffic, getWidth(), getHeight()); // MOVE CARS HERE
-            repaint(); // THEN DRAW
-        });
+        animation = new Timer(16, e -> repaint()); // ~60 FPS
         animation.start();
     }
 
@@ -59,10 +73,22 @@ public final class JrafficCanvas extends JPanel {
         roads.draw(g, getWidth(), getHeight());
         traffic.setTrafficPositions(roads.getTrafficPlace());
 
+        if (intersection == null) {
+            intersection = new Intersection(roads.getRoadCenter());
+        }
+
         // update and draw traffic
         traffic.update();
         traffic.draw(g, getWidth());
-        cars.drawAll(g);
+        if (intersection != null) {
+            cars.update(roads.getRoadCenter(), getWidth(), traffic, intersection);
+        }
+        cars.draw(g, getWidth());
 
+        if (intersection != null) {
+            g.setColor(Color.CYAN);
+            g.drawRect(intersection.getBounds().x, intersection.getBounds().y, intersection.getBounds().width, intersection.getBounds().height);
+        }
     }
 }
+
