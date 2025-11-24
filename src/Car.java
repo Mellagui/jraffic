@@ -16,15 +16,21 @@ public class Car {
     private final int w;
     
     private boolean moving;
+    private boolean passed;
     
     public Car(String direction, Map<String, List<Point>> center, int width) {
         moving = true;
+        passed = false;
         dir = direction;
         w = width;
         color = randomColor();
         position = startPosition(center);
         turn_point = turningPoint(center);
         next_dir = nextDirection();
+    }
+
+    public boolean getPassed() {
+        return passed;
     }
 
     public String getDir() {
@@ -63,6 +69,17 @@ public class Car {
         this.turn_point = turn_point;
     }
 
+    public void setPassed(Map<String, List<Point>> center) {
+        final List<Point> line = center.get(dir);
+
+        passed = switch (dir) {
+            case "north" -> position.y >= line.get(0).y - ((w * 6) / 100);
+            case "south" -> position.y <= line.get(0).y;
+            case "east"  -> position.x >= line.get(0).x - ((w * 6) / 100);
+            default      -> position.x <= line.get(0).x;
+        };
+    }
+
     private int randomColor() {
         final Random random = new Random();
         return random.nextInt(3);
@@ -97,13 +114,14 @@ public class Car {
     public void handleColisions(Car car) {
         final String c_dir = car.getDir();
         final Point c_pos = car.getPosition();
+        final int size = (w * 6) / 100;
         final int gap = (w * 3) / 100;
 
         switch (c_dir) {
-            case "north" -> moving = position.y < c_pos.y - gap;
-            case "south" -> moving = position.y > c_pos.y + gap;
-            case "east"  -> moving = position.x < c_pos.x - gap;
-            default      -> moving = position.x > c_pos.x + gap;
+            case "north" -> moving = position.y < c_pos.y - (gap + size);
+            case "south" -> moving = position.y > c_pos.y + (gap + size);
+            case "east"  -> moving = position.x < c_pos.x - (gap + size);
+            default      -> moving = position.x > c_pos.x + (gap + size);
         }
     }
 

@@ -69,7 +69,7 @@ public final class JrafficCanvas extends JPanel {
         traffic.update();
         traffic.draw(g, getWidth());
 
-        cars.update(roads.getRoadCenter(),getWidth() );
+        cars.update(roads.getRoadCenter(), getWidth() );
         cars.draw(g);
     }
 }

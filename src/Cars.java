@@ -24,6 +24,7 @@ public class Cars {
             c_list = new ArrayList<>();
             cars.put(dir, c_list);
         }
+
         c_list.add(car);
     }
 
@@ -33,32 +34,41 @@ public class Cars {
     }
 
     public void update(Map<String, List<Point>> center, int w) {
-        for (Map.Entry<String, List<Car>> map : cars.entrySet()) {
+        for (final Map.Entry<String, List<Car>> map : cars.entrySet()) {
             final String dir = map.getKey();
-            final List<Car> c_list = map.getValue();
 
-            for (int i = 0; i < c_list.size(); i++) {
-                final Car car = c_list.get(i);
+            final List<Car> c_list_after = new ArrayList<>();
+            final List<Car> c_list_before = new ArrayList<>();
+
+            for (final Car car : map.getValue()) {
+                if (car.getPassed()) c_list_after.add(car);
+                else c_list_before.add(car);
+            }
+
+            for (final Car car : c_list_after) car.move();
+
+            for (int i = 0; i < c_list_before.size(); i++) {
+                final Car car = c_list_before.get(i);
+
+                car.move();
                 
                 if (i == 0) {
                     final Point c_pos = car.getPosition();
                     final List<Point> line = center.get(dir);
                     
                     final boolean moving = switch (dir) {
-                        case "north" -> c_pos.y < line.get(0).y;
+                        case "north" -> c_pos.y < line.get(0).y - ((w * 6) / 100);
                         case "south" -> c_pos.y > line.get(0).y;
-                        case "east"  -> c_pos.x < line.get(0).x;
+                        case "east"  -> c_pos.x < line.get(0).x - ((w * 6) / 100);
                         default      -> c_pos.x > line.get(0).x;
                     };
-                    System.out.println(moving);
+                    System.out.println(line.toString());
                     
                     car.setMoving(moving);
                     continue;
-                } else {
-                    car.handleColisions(c_list.get(i - 1));
                 }
-                
-                car.move();
+
+                car.handleColisions(c_list_before.get(i - 1));    
             }
         }
     }
@@ -80,14 +90,14 @@ public class Cars {
             default      -> c_pos.x + (size * 2) + gap <= w;
         };
 
-        if (c_list.size() * (size + gap) >= distance - (size + gap)) return false;
+        // if (c_list.size() * (size + gap) >= distance - (size + gap)) return false;
 
-        return can && true;
+        return can;
     }
 
     public void draw(Graphics g) {
-        for (Map.Entry<String, List<Car>> c_list : cars.entrySet()) {
-            for (Car car : c_list.getValue()) {
+        for (final Map.Entry<String, List<Car>> c_list : cars.entrySet()) {
+            for (final Car car : c_list.getValue()) {
                 car.draw(g);
             }
         }
